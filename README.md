@@ -1,4 +1,4 @@
-# LanCo Café X 公創新世代 - 對抗網路詐騙假訊息 X LINE
+# LanCo Café
 
 1. 利用特定 Prompt 詢問 LLM 是否有做事實查核的必要，而且能夠查證
 
@@ -34,5 +34,9 @@
 
 5. 回傳訊息
 
-### Images
-1. 如果訊息是 Image，將 Image 傳入給 Gemini Vision API 獲得他的對應文字，並放入上方的 Workflow
+## Images
+如果訊息是 Image，將 Image 傳入給 Gemini Vision API 獲得他的對應文字，並放入上方的 Workflow
+
+
+## Caching
+將每一則完整經過 Fact-Checking Flow 的訊息存入資料庫，使下次查詢不必重新經過整個流程
