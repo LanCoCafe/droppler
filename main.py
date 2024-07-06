@@ -18,7 +18,7 @@ from linebot.v3.webhooks import (
     TextMessageContent
 )
 
-from process_messages import process_group_message, process_user_message
+from src.process_messages import process_group_message, process_user_message
 
 load_dotenv()
 
