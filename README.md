@@ -16,11 +16,18 @@
 
 >  Categorize the message with the following tags. Match as much as possible.
 ```json
-[
+{
+  "tags": [
+    "日常生活資訊",
+    "旅遊景點資訊",
+    "科技新聞",
+    "運動新聞",
+    "社會事件",
     "政治",
-    "明星",
-    "爭議"
-]
+    "健康醫療資訊"
+  ]
+}
+
 ```
 
 3. 如果任何一個 Tag 符合群組的設定，詢問 LLM 可以以什麼關鍵字進行搜尋
