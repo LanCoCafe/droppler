@@ -2,7 +2,8 @@ from os import getenv
 
 from dotenv import load_dotenv
 from flask import Flask, request, abort, redirect
-from langchain_anthropic import ChatAnthropic
+from google import generativeai
+from google.generativeai import GenerativeModel
 from linebot.v3 import (
     WebhookHandler
 )
@@ -29,7 +30,44 @@ handler = WebhookHandler(getenv("CHANNEL_SECRET"))
 api_client = ApiClient(configuration)
 line_bot_api = MessagingApi(api_client)
 
-model = ChatAnthropic(model="claude-3-5-sonnet-20240620", api_key=getenv("ANTHROPIC_API_KEY"))
+
+def setup_gemini() -> GenerativeModel:
+    generativeai.configure(api_key=getenv("GEMINI_API_KEY"))
+    generation_config = {
+        "temperature": 0.9,
+        "top_p": 1,
+        "top_k": 1,
+        "max_output_tokens": 2048,
+        "response_mime_type": "application/json",
+    }
+
+    safety_settings = [
+        {
+            "category": "HARM_CATEGORY_HARASSMENT",
+            "threshold": "BLOCK_NONE"
+        },
+        {
+            "category": "HARM_CATEGORY_HATE_SPEECH",
+            "threshold": "BLOCK_NONE"
+        },
+        {
+            "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            "threshold": "BLOCK_NONE"
+        },
+        {
+            "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+            "threshold": "BLOCK_NONE"
+        },
+    ]
+
+    return GenerativeModel(
+        model_name="gemini-1.5-flash",
+        generation_config=generation_config,
+        safety_settings=safety_settings
+    )
+
+
+model = setup_gemini()
 
 
 @app.route("/", methods=['GET'])

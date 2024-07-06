@@ -1,8 +1,15 @@
-from langchain_core.language_models import BaseChatModel
+import json
+
+from google.generativeai import GenerativeModel
 from linebot.v3.messaging import ReplyMessageRequest, MessagingApi, TextMessage
 from linebot.v3.webhooks import MessageEvent
+from pydantic import Field
+from pydantic.v1 import BaseModel
 
-from utils import get_social_titles, NewsScore, get_news_score, extract_links
+
+class FactCheckingNeeded(BaseModel):
+    needed: bool = Field(description="Whether fact-checking is needed")
+    reason: str = Field(description="The reason why fact-checking is needed in Traditional Chinese")
 
 
 def process_user_message(api: MessagingApi, event: MessageEvent):
@@ -19,41 +26,27 @@ def process_user_message(api: MessagingApi, event: MessageEvent):
     )
 
 
-def process_group_message(api: MessagingApi, event: MessageEvent, model: BaseChatModel):
-    links = extract_links(event.message.text)[0:5]
+def process_group_message(api: MessagingApi, event: MessageEvent, model: GenerativeModel):
+    conversation = model.start_chat()
 
-    if not links:
-        return
+    response = conversation.send_message(
+        "This is a message from a casual group chat. Please tell if the fact checking is needed, and the reason that fact checking is needed. \n"
+        f"Message: {event.message.text}\n"
+        "Output in the following json format:\n"
+        """
+        {
+          "needed": true,
+          "reason": "The reason why fact-checking is needed in Traditional Chinese, null if not needed."
+        }
+        """
+    )
 
-    response_messages: list[TextMessage] = []
+    response_dict = json.loads(response.text)
+    print(response_dict)
 
-    for link in links:
-        try:
-            title = get_social_titles(link)
-        except Exception as e:
-            response_messages.append(TextMessage(text=f"Error retrieving or parsing URL: {str(e)}"))
-            continue
-
-        scores: NewsScore = get_news_score(model, title)
-
-        response_messages.append(
-            TextMessage(
-                text=f"Title: {title}\n" +
-                     f"Exaggerate: {scores.exaggerate}\n" if scores.exaggerate > 5 else "" +
-                     f"Clickbait: {scores.clickbait}\n" if scores.clickbait > 5 else "" +
-                     f"Misleading: {scores.misleading}\n" if scores.misleading > 5 else "" +
-                     f"Controversy: {scores.controversy}\n" if scores.controversy > 5 else "" +
-                     f"Piggyback: {scores.piggyback}\n" if scores.piggyback > 5 else "" +
-                     f"Inflammatory: {scores.inflammatory}\n" if scores.inflammatory > 5 else "" +
-                     f"Reason: {scores.reason}"
-            )
-        )
-
-    print(response_messages)
-    
     api.reply_message_with_http_info(
         reply_message_request=ReplyMessageRequest(
             reply_token=event.reply_token,
-            messages=response_messages
+            messages=[TextMessage(text=str(response_dict))]
         )
     )
