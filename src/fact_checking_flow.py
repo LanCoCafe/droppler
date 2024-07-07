@@ -88,5 +88,23 @@ def keywords_search(keywords: list[str]) -> list[dict[str, str | bool]]:
 
 
 def check_facts(conversation: ChatSession, message: str, search_result: list[dict[str, str | bool]]) -> TextMessage:
-    # TODO: Implement the 5th step of the fact-checking flow
-    return TextMessage(text="placeholder")
+    prompt = ""
+    news = "\n".join([f"{i}. {result['og_description']}" for i, result in enumerate(search_result, start=1) if not result["TFC"]])
+    prompt += f"""
+    Please check if the following text is fake news or genuine
+    Text that appears to be fake news: {news}
+    References news: {message}
+    Output a clear classification indicating whether the news is fake or genuine, and provide reasons based on referenced sources, using Traditional Chinese.
+    """
+    for result in search_result:
+        if result["TFC"]:
+            prompt = f"""
+            Please check if the following text is fake news or genuine
+            Text that appears to be fake news: {news}
+            Refer newsto Taiwan FactCheck Center: {message}
+            Output a clear classification indicating whether the news is fake or genuine, and provide reasons based on referenced sources, using Traditional Chinese.
+            """
+            break
+    response = conversation.send_message(prompt)
+    return TextMessage(text=response.text)
+
