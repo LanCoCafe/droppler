@@ -111,6 +111,4 @@ def handle_message(event: MessageEvent):
 
 
 if __name__ == "__main__":
-    config = Config("main:app", host=getenv("HOST"), port=int(getenv("PORT")), log_level="info")
-    server = Server(config)
-    server.run()
+    app.run(host="0.0.0.0", port=3002)

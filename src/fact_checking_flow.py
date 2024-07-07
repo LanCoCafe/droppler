@@ -2,7 +2,6 @@ import json
 
 from google.generativeai import ChatSession
 from googlesearch import search
-from linebot.v3.messaging import TextMessage
 
 from src.static import tags
 from src.utils import parse_news_url
@@ -57,7 +56,7 @@ def generate_keywords(conversation: ChatSession, message: str) -> dict:
         ```json
         {
             "keywords": [
-                "An array of keywords predicted in Traditional Chinese",
+                "An array of max of 5 keywords predicted in Traditional Chinese",
                 "Example: 台灣近日颱風",
                 "Another Example: 果菜價格",
                 "Yet Another Example: 醫療量能不足"
@@ -80,31 +79,53 @@ def keywords_search(keywords: list[str]) -> list[dict[str, str | bool]]:
     Returns:
         List[Dict[str, bool]]: A list of dictionaries containing the result of parsing each news link.
     """
-    result = []
-    for keyword in keywords:
-        for link in search(keyword, stop=5, pause=1.0):
-            result.append(parse_news_url(link))
-    return result
+    results = []
+
+    for link in search("+".join(keywords), stop=5, pause=1.0):
+        try:
+            results.append(parse_news_url(link))
+        except Exception as e:
+            continue
+
+    return results
 
 
-def check_facts(conversation: ChatSession, message: str, search_result: list[dict[str, str | bool]]) -> TextMessage:
+def check_facts(conversation: ChatSession, message: str, search_result: list[dict[str, str | bool]]) -> dict:
     prompt = ""
-    news = "\n".join([f"{i}. {result['og_description']}" for i, result in enumerate(search_result, start=1) if not result["TFC"]])
+    news = "\n".join(
+        [f"{i}. {result['og_description']}" for i, result in enumerate(search_result, start=1) if not result["TFC"]]
+    )
+
     prompt += f"""
     Please check if the following text is fake news or genuine
     Text that appears to be fake news: {news}
     References news: {message}
-    Output a clear classification indicating whether the news is fake or genuine, and provide reasons based on referenced sources, using Traditional Chinese.
+    Output a clear classification indicating whether the news is fake or genuine, and provide reasons based on referenced sources, using Traditional Chinese with the following format: 
+    """ + """
+    ```json
+    {
+        "genuine": true,
+        "reason": "The reason why the news is genuine in Traditional Chinese"
+    }
+    ```
     """
+
     for result in search_result:
         if result["TFC"]:
             prompt = f"""
             Please check if the following text is fake news or genuine
             Text that appears to be fake news: {news}
-            Refer newsto Taiwan FactCheck Center: {message}
-            Output a clear classification indicating whether the news is fake or genuine, and provide reasons based on referenced sources, using Traditional Chinese.
+            Refer news to Taiwan FactCheck Center: {message}
+            Output a clear classification indicating whether the news is fake or genuine, and provide reasons based on referenced sources, using Traditional Chinese with the following format:
+            """ + """
+            ```json
+            {
+                "genuine": true,
+                "reason": "The reason why the news is genuine in Traditional Chinese"
+            }
+            ```
             """
             break
     response = conversation.send_message(prompt)
-    return TextMessage(text=response.text)
 
+    return json.loads(response.text)
