@@ -18,8 +18,7 @@ def process_user_message(api: MessagingApi, event: MessageEvent):
             reply_token=event.reply_token,
             messages=[
                 TextMessage(
-                    text="本機器人只能於群組內使用。請把我加進一個群組再試一次"
-                    # TODO: Edit this text to make it more friendly
+                    text="嘿，很高興看到你！但是你只能在一個群組裡面使用我，把我加到一個群組之後再試試一次吧"
                 )
             ]
         )
