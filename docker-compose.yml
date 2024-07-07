@@ -9,6 +9,9 @@ services:
             - 8888:8888
         networks:
             - droppler-infra
+        volumes:
+            - ./db/data:/data/db
+            - ./db/config:/data/configdb
     droppler-db:
         image: mongo:latest
         networks:
