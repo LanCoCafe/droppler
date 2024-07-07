@@ -18,10 +18,9 @@ from linebot.v3.webhooks import (
     TextMessageContent
 )
 from pymongo import MongoClient
+from uvicorn import Config, Server
 
 from src.process_messages import process_group_message, process_user_message
-
-import uvicorn
 
 load_dotenv()
 
@@ -112,6 +111,6 @@ def handle_message(event: MessageEvent):
 
 
 if __name__ == "__main__":
-    config = uvicorn.Config("main:app", host=getenv("HOST"), port=int(getenv("PORT")), log_level="info")
-    server = uvicorn.Server(config)
+    config = Config("main:app", host=getenv("HOST"), port=int(getenv("PORT")), log_level="info")
+    server = Server(config)
     server.run()
