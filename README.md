@@ -1,41 +1,44 @@
-# LanCo Café
+# LanCo Café - Droppler
+
+## Text
 
 1. 利用特定 Prompt 詢問 LLM 是否有做事實查核的必要，而且能夠查證
 
-> This is a message from a casual group chat. Please tell if the fact checking is needed, and the reason that fact checking is needed.\n
-> {message}
-> Output in the following JSON format:
-```json
-{
-    "needed": true,
-    "reason": "..."
-}
-```
+    > This is a message from a casual group chat. Please tell if the fact checking is needed, and the reason that fact checking is needed.\n
+    > {message}
+    > Output in the following JSON format:
+    ```json
+    {
+        "needed": true,
+        "reason": "..."
+    }
+    ```
 
 2. 標記這則訊息，利用 LLM 為訊息進行分類，目前暫定以下幾個：
 
->  Categorize the message with the following tags. Match as much as possible.
-```json
-{
-  "tags": [
-    "日常生活資訊",
-    "旅遊景點資訊",
-    "科技新聞",
-    "運動新聞",
-    "社會事件",
-    "政治",
-    "健康醫療資訊"
-  ]
-}
-
-```
+    >  Categorize the message with the following tags. Match as much as possible.
+    ```json
+    {
+      "tags": [
+        "日常生活資訊",
+        "旅遊景點資訊",
+        "科技新聞",
+        "運動新聞",
+        "社會事件",
+        "政治",
+        "健康醫療資訊"
+      ]
+    }
+    
+    ```
 
 3. 如果任何一個 Tag 符合群組的設定，詢問 LLM 可以以什麼關鍵字進行搜尋
-```json
-{
-    "keywords": []
-}
-```
+
+    ```json
+    {
+        "keywords": []
+    }
+    ```
 
 4. 利用 Google 或 Bing 等搜尋引擎搜尋相關議題，並將前五個網頁作為 Prompt 回傳給 LLM，並結合訊息本身與網頁訊息進行 Fact-Checking
 
