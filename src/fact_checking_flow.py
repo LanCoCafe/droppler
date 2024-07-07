@@ -65,7 +65,16 @@ def generate_keywords(conversation: ChatSession, message: str) -> dict:
     return json.loads(response.text)
 
 
-def keywords_search(keywords: list[str]) -> list[str]:
+def keywords_search(keywords: list[str]) -> list[dict[str, str | bool]]:
+    """
+    Search for news related to a list of keywords.
+
+    Args:
+        keywords (List[str]): A list of keywords to search for.
+
+    Returns:
+        List[Dict[str, bool]]: A list of dictionaries containing the result of parsing each news link.
+    """
     result = []
     for keyword in keywords:
         for link in search(keyword, stop=5, pause=1.0):

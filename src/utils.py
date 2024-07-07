@@ -3,6 +3,8 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
+from typing import Union
+
 
 def extract_links(text: str) -> list[str]:
     pattern = r'https?://[^\s]+'
@@ -31,7 +33,7 @@ def get_social_titles(url: str) -> str:
     except Exception as e:
         raise Exception(f'Error retrieving or parsing URL: {str(e)}')
     
-def parse_news_url(url: str) -> dict[str, str]:
+def parse_news_url(url: str) -> dict[str, str | bool]:
     """
     Parses a URL to extract Open Graph (OG) title and description.
 
@@ -42,9 +44,9 @@ def parse_news_url(url: str) -> dict[str, str]:
         url (str): The URL to parse.
 
     Returns:
-        dict[str, str]: A dictionary containing the following keys:
-            * 'og_title': The Open Graph title of the URL (if found).
-            * 'og_description': The Open Graph description of the URL (if found).
+        dict[str, Union[str, bool]]: A dictionary containing the following keys:
+            * 'og_description' (str): The Open Graph description of the URL (if found).
+            * 'TFC' (bool): If the data comes from TFC, then value is True, else False.
 
     Raises:
         Exception: If there is an error retrieving or parsing the URL. The exception message 
@@ -57,7 +59,7 @@ def parse_news_url(url: str) -> dict[str, str]:
             og_description = soup.find('meta', property='og:description')['content'] if soup.find(
                 'meta', property='og:description'
             ) else None
-            return og_description
+            return {"og_description": og_description, "TFC": True if "tfc-taiwan.org.tw" in url else False}
         else:
             raise Exception(f'Failed to retrieve URL. Status code: {response.status_code}')
     except Exception as e:
