@@ -1,0 +1,18 @@
+services:
+    droppler:
+        build: .
+        env_file:
+            - .env
+        environment:
+            - PORT=8888
+        ports:
+            - 8888:8888
+        networks:
+            - droppler-infra
+    droppler-db:
+        image: mongo:latest
+        networks:
+            - droppler-infra
+
+networks:
+    droppler-infra:

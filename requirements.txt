@@ -7,3 +7,4 @@ requests~=2.31.0
 beautifulsoup4==4.12.3
 pydantic~=2.8.2
 google==3.0.0
+uvicorn==0.30.1
