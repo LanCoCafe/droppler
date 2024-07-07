@@ -17,6 +17,7 @@ from linebot.v3.webhooks import (
     MessageEvent,
     TextMessageContent
 )
+from pymongo import MongoClient
 
 from src.process_messages import process_group_message, process_user_message
 
@@ -31,6 +32,8 @@ handler = WebhookHandler(getenv("CHANNEL_SECRET"))
 
 api_client = ApiClient(configuration)
 line_bot_api = MessagingApi(api_client)
+
+database = MongoClient(getenv("MONGODB_URI")).get_database("droppler")
 
 
 def setup_gemini() -> GenerativeModel:
@@ -102,7 +105,7 @@ def handle_message(event: MessageEvent):
         process_user_message(line_bot_api, event)
 
     elif event.source.type == "group":
-        process_group_message(line_bot_api, event, model)
+        process_group_message(database, line_bot_api, event, model)
 
     else:
         return

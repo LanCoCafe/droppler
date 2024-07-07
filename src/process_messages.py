@@ -1,10 +1,13 @@
-import json
-
 from google.generativeai import GenerativeModel
 from linebot.v3.messaging import ReplyMessageRequest, MessagingApi, TextMessage
 from linebot.v3.webhooks import MessageEvent
 from pydantic import Field
 from pydantic.v1 import BaseModel
+from pymongo.database import Database
+
+from src.commands import dispatch_command
+from src.fact_checking_flow import is_fact_checking_needed, tag_message
+from src.models.group_settings import GroupSettings
 
 
 class FactCheckingNeeded(BaseModel):
@@ -25,27 +28,29 @@ def process_user_message(api: MessagingApi, event: MessageEvent):
     )
 
 
-def process_group_message(api: MessagingApi, event: MessageEvent, model: GenerativeModel):
-    conversation = model.start_chat()
+def process_group_message(database: Database, api: MessagingApi, event: MessageEvent, model: GenerativeModel):
+    if dispatch_command(database, api, event):
+        return
 
-    response = conversation.send_message(
-        "This is a message from a casual group chat. Please tell if the fact checking is needed, and the reason that fact checking is needed. \n"
-        f"Message: {event.message.text}\n"
-        "Output in the following json format:\n"
-        """
-        {
-          "needed": true,
-          "reason": "The reason why fact-checking is needed in Traditional Chinese, null if not needed."
-        }
-        """
-    )
+    group_settings = GroupSettings.find_one(api, database, group_id=event.source.group_id)
 
-    response_dict = json.loads(response.text)
-    print(response_dict)
+    chat = model.start_chat()
+
+    fact_checking_needed = is_fact_checking_needed(chat, event.message.text)
+
+    if not fact_checking_needed['needed']:
+        return
+
+    fact_checking_needed_reason = fact_checking_needed['reason']
+
+    message_tags = tag_message(chat, event.message.text)
+
+    if not message_tags["tag"] in group_settings.allowed_tags:
+        return
 
     api.reply_message_with_http_info(
         reply_message_request=ReplyMessageRequest(
             reply_token=event.reply_token,
-            messages=[TextMessage(text=str(response_dict))]
+            messages=[TextMessage(text=fact_checking_needed_reason)]
         )
     )

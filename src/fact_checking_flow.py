@@ -1,11 +1,11 @@
 import json
 
 from google.generativeai import ChatSession
+from googlesearch import search
 from linebot.v3.messaging import TextMessage
 
-from googlesearch import search
-
-from src.utils import parse_news_url 
+from src.static import tags
+from src.utils import parse_news_url
 
 
 def is_fact_checking_needed(conversation: ChatSession, message: str) -> dict:
@@ -14,11 +14,13 @@ def is_fact_checking_needed(conversation: ChatSession, message: str) -> dict:
         This is a message from a casual group chat.
         Please tell if the fact checking is needed, and the reason that fact checking is needed.
         Message: {message}
-        Output in the following json format:
+        Output in the following json format:""" + """
+        ```json
         {
             "needed": true,
             "reason": "The reason why fact-checking is needed in Traditional Chinese, null if not needed."
         }
+        ```
         """
     )
 
@@ -28,17 +30,17 @@ def is_fact_checking_needed(conversation: ChatSession, message: str) -> dict:
 def tag_message(conversation: ChatSession, message: str) -> dict:
     response = conversation.send_message(
         f"""
-        Please tag this message based on this piece of text.
+        Categorize the message with one of the following tags
+        {tags}
+        Match as much as possible.
         Message: {message}
         Output in the following json format:
+        """ + """
+        ```json
         {
-            "tags": [
-                "An array of tags detected in Traditional Chinese",
-                "Example: 新聞",
-                "Another Example: 政治",
-                "Yet Another Example: 醫療資訊"
-            ]
+            "tag": 0
         }
+        ```
         """
     )
 
@@ -51,6 +53,8 @@ def generate_keywords(conversation: ChatSession, message: str) -> dict:
         Please provide keywords that probably able to find related news to this message
         Message: {message}
         Output in the following json format:
+        """ + """
+        ```json
         {
             "keywords": [
                 "An array of keywords predicted in Traditional Chinese",
@@ -59,6 +63,7 @@ def generate_keywords(conversation: ChatSession, message: str) -> dict:
                 "Yet Another Example: 醫療量能不足"
             ]
         }
+        ```
         """
     )
 
