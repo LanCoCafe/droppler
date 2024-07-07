@@ -3,6 +3,10 @@ import json
 from google.generativeai import ChatSession
 from linebot.v3.messaging import TextMessage
 
+from googlesearch import search
+
+from src.utils import parse_news_url 
+
 
 def is_fact_checking_needed(conversation: ChatSession, message: str) -> dict:
     response = conversation.send_message(
@@ -61,9 +65,12 @@ def generate_keywords(conversation: ChatSession, message: str) -> dict:
     return json.loads(response.text)
 
 
-def search(keywords: list[str]) -> list[str]:
-    # TODO: Implement the 4th step of the fact-checking flow
-    pass
+def keywords_search(keywords: list[str]) -> list[str]:
+    result = []
+    for keyword in keywords:
+        for link in search(keyword, stop=5, pause=1.0):
+            result.append(parse_news_url(link))
+    return result
 
 
 def check_facts(conversation: ChatSession, message: str, search_result) -> TextMessage:
