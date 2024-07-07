@@ -22,8 +22,24 @@ def is_fact_checking_needed(conversation: ChatSession, message: str) -> dict:
 
 
 def tag_message(conversation: ChatSession, message: str) -> dict:
-    # TODO: Implement the 2nd step of the fact-checking flow
-    pass
+    response = conversation.send_message(
+        f"""
+        This is a message from a casual group chat.
+        Please tag this message based on this piece of text.
+        Message: {message}
+        Output in the following json format:
+        {
+            "tags": [
+                "An array of tags detected in Traditional Chinese",
+                "Example: 新聞",
+                "Another Example: 政治",
+                "Yet Another Example: 醫療資訊"
+            ]
+        }
+        """
+    )
+
+    return json.loads(response.text)
 
 
 def generate_keywords(conversation: ChatSession, message: str) -> dict:
