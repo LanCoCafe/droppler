@@ -6,7 +6,7 @@ from pydantic.v1 import BaseModel
 from pymongo.database import Database
 
 from src.commands import dispatch_command
-from src.fact_checking_flow import is_fact_checking_needed, tag_message
+from src.fact_checking_flow import is_fact_checking_needed, tag_message, generate_keywords, keywords_search
 from src.models.group_settings import GroupSettings
 
 
@@ -36,6 +36,7 @@ def process_group_message(database: Database, api: MessagingApi, event: MessageE
 
     chat = model.start_chat()
 
+    # Is fact-checking needed?
     fact_checking_needed = is_fact_checking_needed(chat, event.message.text)
 
     if not fact_checking_needed['needed']:
@@ -43,10 +44,15 @@ def process_group_message(database: Database, api: MessagingApi, event: MessageE
 
     fact_checking_needed_reason = fact_checking_needed['reason']
 
+    # Tag the message
     message_tags = tag_message(chat, event.message.text)
 
     if not message_tags["tag"] in group_settings.allowed_tags:
         return
+
+    keywords = generate_keywords(chat, event.message.text)['keywords']
+    search_results = keywords_search(keywords)
+
 
     api.reply_message_with_http_info(
         reply_message_request=ReplyMessageRequest(

@@ -1,9 +1,8 @@
 import re
+from typing import Union
 
 import requests
 from bs4 import BeautifulSoup
-
-from typing import Union
 
 
 def extract_links(text: str) -> list[str]:
@@ -32,7 +31,8 @@ def get_social_titles(url: str) -> str:
             raise Exception(f'Failed to retrieve URL. Status code: {response.status_code}')
     except Exception as e:
         raise Exception(f'Error retrieving or parsing URL: {str(e)}')
-    
+
+
 def parse_news_url(url: str) -> dict[str, str | bool]:
     """
     Parses a URL to extract Open Graph (OG) title and description.
@@ -52,7 +52,7 @@ def parse_news_url(url: str) -> dict[str, str | bool]:
         Exception: If there is an error retrieving or parsing the URL. The exception message 
             will include the original exception and the status code (if applicable).
     """
-    try:    
+    try:
         response = requests.get(url)
         if response.status_code == 200:
             soup = BeautifulSoup(response.content, 'html.parser')
@@ -64,4 +64,3 @@ def parse_news_url(url: str) -> dict[str, str | bool]:
             raise Exception(f'Failed to retrieve URL. Status code: {response.status_code}')
     except Exception as e:
         raise Exception(f'Error retrieving or parsing URL: {str(e)}')
-        

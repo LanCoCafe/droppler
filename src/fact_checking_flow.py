@@ -87,6 +87,6 @@ def keywords_search(keywords: list[str]) -> list[dict[str, str | bool]]:
     return result
 
 
-def check_facts(conversation: ChatSession, message: str, search_result) -> TextMessage:
+def check_facts(conversation: ChatSession, message: str, search_result: list[dict[str, str | bool]]) -> TextMessage:
     # TODO: Implement the 5th step of the fact-checking flow
-    pass
+    return TextMessage(text="placeholder")
