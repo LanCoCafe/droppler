@@ -6,13 +6,14 @@ from linebot.v3.messaging import TextMessage
 
 def is_fact_checking_needed(conversation: ChatSession, message: str) -> dict:
     response = conversation.send_message(
-        "This is a message from a casual group chat. Please tell if the fact checking is needed, and the reason that fact checking is needed. \n"
-        f"Message: {message}\n"
-        "Output in the following json format:\n"
-        """
+        f"""
+        This is a message from a casual group chat.
+        Please tell if the fact checking is needed, and the reason that fact checking is needed.
+        Message: {message}
+        Output in the following json format:
         {
-          "needed": true,
-          "reason": "The reason why fact-checking is needed in Traditional Chinese, null if not needed."
+            "needed": true,
+            "reason": "The reason why fact-checking is needed in Traditional Chinese, null if not needed."
         }
         """
     )
